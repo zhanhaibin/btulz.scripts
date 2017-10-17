@@ -20,6 +20,11 @@ RUN mkdir -p "${IBAS_GIT}"
 #COPY "compile_order.txt" "${IBAS}"
 #COPY "compiles.sh" "${IBAS}"
 
+#下载jdk
+wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-linux-x64.tar.gz
+#下载maven
+wget http://mirror.bit.edu.cn/apache/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz
+
 #java及maven安装包，并自动释放
 ADD jdk-8u144-linux-x64.tar.gz /usr/local
 ADD apache-maven-3.5.0-bin.tar.gz /usr/local
