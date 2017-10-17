@@ -1,33 +1,39 @@
 #!/bin/bash
 echo '****************************************************************************'
-echo '                 gits.sh                                                    '
-echo '                      by niuren.zhu                                         '
-echo '                           2017.09.15                                       '
+echo '              gits.sh                                                     '
+echo '                      by zhanhaibin                                         '
+echo '                           2017.09.28                                       '
 echo '  说明：                                                                    '
-echo '    1. 遍历工作目录，存在.git文件夹则执行传入指令。                         '
-echo '    2. 参数1，指令。                                                        '
+echo '    1. 遍历compile_order.txt文件。                              '
+echo '    2. 参数1，工作目录。                                                    '
 echo '****************************************************************************'
 # 设置参数变量
-# 工作目录
-WORK_FOLDER=`pwd`
-# 命令
-GIT_COMMAND=$@
-if [ "${GIT_COMMAND}" == "" ]
+# 启动目录
+STARTUP_FOLDER=`pwd`
+# 工作目录默认第一个参数
+WORK_FOLDER=$1
+# 修正相对目录为启动目录
+if [ "${WORK_FOLDER}" == "./" ]
 then
-    echo 命令无效
-    exit 1
+  WORK_FOLDER=${STARTUP_FOLDER}
+fi
+# 未提供工作目录，则取启动目录
+if [ "${WORK_FOLDER}" == "" ]
+then
+  WORK_FOLDER=${STARTUP_FOLDER}
 fi
 
-echo --工作目录：${WORK_FOLDER}
-echo --批量指令：git ${GIT_COMMAND}
+echo --工作的目录：${WORK_FOLDER}
+# 获取编译顺序
+if [ ! -e ${WORK_FOLDER}/compile_order.txt ]
+then
+  ls -l ${WORK_FOLDER} | awk '/^d/{print $NF}' > ${WORK_FOLDER}/compile_order.txt
+fi
 # 遍历当前目录存
-for folder in `ls -l "${WORK_FOLDER}" | awk '/^d/{print $NF}'`
+while read file
 do
-  if [ -e "${WORK_FOLDER}/${folder}/.git" ]
-  then
-    cd ${WORK_FOLDER}/${folder}
-    echo ----`pwd`
-    git ${GIT_COMMAND}
-  fi
-done
+	echo 'Git pull：'${file}
+	git clone https://github.com/color-coding/"${file}".git "${IBAS}${file}"; 
+        echo '****************************************************************************'
+done < ${WORK_FOLDER}/compile_order.txt 
 cd ${WORK_FOLDER}

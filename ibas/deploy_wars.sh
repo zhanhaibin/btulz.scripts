@@ -21,11 +21,12 @@ WORK_FOLDER=`pwd`
 VERSION=$1
 # 仓库地址
 REPOSITORY_URL=$2
-if [ "${REPOSITORY_URL}" == "" ];then REPOSITORY_URL=http://maven.colorcoding.org/repository/maven-releases; fi;
+if [ "${REPOSITORY_URL}" == "" ];then REPOSITORY_URL=http://192.168.64.132:8081/repository/maven-releases; fi;
 # MAVEN参数信息
 REPOSITORY_ID=ibas-maven
 GROUP_ID=org.colorcoding.apps
-
+# 定义war文件名称
+file=$3
 echo --检查maven运行环境
 mvn -v >/dev/null
 if [ $? -ne 0 ]; then
@@ -40,32 +41,64 @@ do
   if [ -e ${WORK_FOLDER}/${line}/release ]
   then
     cd ${WORK_FOLDER}/${line}/release
-    for PACKAGE in `find ./ -name "${line}*.war"`
-    do
-      # 获取包标识
-      ARTIFACT_ID=${PACKAGE##*/}
-      ARTIFACT_ID=${ARTIFACT_ID%%-*}
-      if [ "${VERSION}" == "" ]
-      then
-          # 未提供版本号，则使用POM文件
-          mvn deploy:deploy-file \
-            -Dfile=${PACKAGE} \
-            -DpomFile=${WORK_FOLDER}/${line}/${ARTIFACT_ID}/pom.xml \
-            -Durl=${REPOSITORY_URL} \
-            -DrepositoryId=${REPOSITORY_ID} \
-            -Dpackaging=war
-      else
-          # 提供版本号，独立上传
-          mvn deploy:deploy-file \
-            -DgroupId=${GROUP_ID} \
-            -DartifactId=${ARTIFACT_ID} \
-            -Dversion=${VERSION} \
-            -Dfile=${PACKAGE} \
-            -Durl=${REPOSITORY_URL} \
-            -DrepositoryId=${REPOSITORY_ID} \
-            -Dpackaging=war
-      fi;
-    done
+    if [ "${line}" == "ibas-typescript"  ]
+    then
+        file=ibas.root 
+        for PACKAGE in `find ./ -name "${file}*.war"` 
+		do
+		  # 获取包标识
+		  ARTIFACT_ID=${PACKAGE##*/}
+		  ARTIFACT_ID=${ARTIFACT_ID%%-*}
+		  if [ "${VERSION}" == "" ]
+		  then
+			  # 未提供版本号，则使用POM文件
+			  mvn deploy:deploy-file \
+				-Dfile=${PACKAGE} \
+				-DpomFile=${WORK_FOLDER}/${line}/pom.xml \
+				-Durl=${REPOSITORY_URL} \
+				-DrepositoryId=${REPOSITORY_ID} \
+				-Dpackaging=war
+		  else
+			  # 提供版本号，独立上传
+			  mvn deploy:deploy-file \
+				-DgroupId=${GROUP_ID} \
+				-DartifactId=${ARTIFACT_ID} \
+				-Dversion=${VERSION} \
+				-Dfile=${PACKAGE} \
+				-Durl=${REPOSITORY_URL} \
+				-DrepositoryId=${REPOSITORY_ID} \
+				-Dpackaging=war
+		  fi;
+		done
+    else
+        file=${line}
+		for PACKAGE in `find ./ -name "${file}*.war"` 
+		do
+		  # 获取包标识
+		  ARTIFACT_ID=${PACKAGE##*/}
+		  ARTIFACT_ID=${ARTIFACT_ID%%-*}
+		  if [ "${VERSION}" == "" ]
+		  then
+			  # 未提供版本号，则使用POM文件
+			  mvn deploy:deploy-file \
+				-Dfile=${PACKAGE} \
+				-DpomFile=${WORK_FOLDER}/${file}/${ARTIFACT_ID}/pom.xml \
+				-Durl=${REPOSITORY_URL} \
+				-DrepositoryId=${REPOSITORY_ID} \
+				-Dpackaging=war
+		  else
+			  # 提供版本号，独立上传
+			  mvn deploy:deploy-file \
+				-DgroupId=${GROUP_ID} \
+				-DartifactId=${ARTIFACT_ID} \
+				-Dversion=${VERSION} \
+				-Dfile=${PACKAGE} \
+				-Durl=${REPOSITORY_URL} \
+				-DrepositoryId=${REPOSITORY_ID} \
+				-Dpackaging=war
+		  fi;
+		done
+    fi  
   fi
 done < ${WORK_FOLDER}/compile_order.txt | sed 's/\r//g'
 cd ${WORK_FOLDER}/
